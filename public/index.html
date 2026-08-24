@@ -38,10 +38,12 @@ async function createSchedule() {
   const prompt = document.getElementById("prompt").value;
   if (!time || !prompt) return alert("Fill both fields");
 
+  const isoTime = new Date(time).toISOString();
+
   const res = await fetch("/api/schedule", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ time, prompt }),
+    body: JSON.stringify({ time: isoTime, prompt }),
   });
   const data = await res.json();
   if (!res.ok) return alert(data.error);
