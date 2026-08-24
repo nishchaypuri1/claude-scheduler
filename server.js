@@ -10,7 +10,7 @@ app.use(express.static(path.join(__dirname, "public")));
 
 const DB_FILE = path.join(__dirname, "schedules.json");
 const API_KEY = process.env.GROQ_API_KEY;
-const MODEL = "llama-3.3-70b-versatile"; // Groq model name
+const MODEL = "openai/gpt-oss-120b"; // Groq model name
 
 // ---------- simple JSON "database" ----------
 function loadSchedules() {
