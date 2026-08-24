@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Claude Auto Scheduler</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 40px auto; background: #0f0f0f; color: #eee; }
+  h1 { font-size: 1.4rem; }
+  input, textarea { width: 100%; padding: 10px; margin: 6px 0 16px; border-radius: 8px; border: 1px solid #333; background: #1a1a1a; color: #eee; box-sizing: border-box; }
+  button { background: #d97757; color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  button:hover { opacity: 0.9; }
+  .schedule { background: #1a1a1a; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+  .status { font-size: 0.85rem; padding: 2px 8px; border-radius: 6px; }
+  .pending { background: #443; color: #ffe08a; }
+  .sent { background: #234; color: #8affb0; }
+  .failed { background: #522; color: #ff8a8a; }
+  small { color: #888; }
+</style>
+</head>
+<body>
+  <h1>🕒 Claude Auto Scheduler</h1>
+  <p><small>Set a time and message — it'll be sent to Claude automatically, even if this browser/laptop is closed, as long as the server is running.</small></p>
+
+  <label>Date & Time</label>
+  <input type="datetime-local" id="time" />
+
+  <label>Message to send Claude</label>
+  <textarea id="prompt" rows="4" placeholder="e.g. Summarize today's AI news"></textarea>
+
+  <button onclick="createSchedule()">Schedule Message</button>
+
+  <h2>Your Schedules</h2>
+  <div id="list"></div>
+
+<script>
+async function createSchedule() {
+  const time = document.getElementById("time").value;
+  const prompt = document.getElementById("prompt").value;
+  if (!time || !prompt) return alert("Fill both fields");
+
+  const res = await fetch("/api/schedule", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ time, prompt }),
+  });
+  const data = await res.json();
+  if (!res.ok) return alert(data.error);
+  document.getElementById("prompt").value = "";
+  loadSchedules();
+}
+
+async function deleteSchedule(id) {
+  await fetch("/api/schedule/" + id, { method: "DELETE" });
+  loadSchedules();
+}
+
+async function loadSchedules() {
+  const res = await fetch("/api/schedules");
+  const schedules = await res.json();
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+  schedules
+    .sort((a, b) => new Date(b.time) - new Date(a.time))
+    .forEach((s) => {
+      const div = document.createElement("div");
+      div.className = "schedule";
+      div.innerHTML = `
+        <div><b>${new Date(s.time).toLocaleString()}</b> <span class="status ${s.status}">${s.status}</span></div>
+        <div>${s.prompt}</div>
+        ${s.response ? `<div><small>Reply: ${s.response.slice(0, 200)}</small></div>` : ""}
+        ${s.status === "pending" ? `<button onclick="deleteSchedule('${s.id}')">Cancel</button>` : ""}
+      `;
+      list.appendChild(div);
+    });
+}
+
+loadSchedules();
+setInterval(loadSchedules, 15000); // refresh every 15s
+</script>
+</body>
+</html>

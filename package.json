@@ -1,0 +1,17 @@
+{
+  "name": "claude-scheduler",
+  "version": "1.0.0",
+  "description": "Schedule messages to be sent to Claude API automatically at a set time",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

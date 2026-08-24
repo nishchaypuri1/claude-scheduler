@@ -1,0 +1,4 @@
+node_modules/
+.env
+schedules.json
+npm-debug.log
